@@ -6,7 +6,7 @@ This project implements an **APB-controlled SPI Master** using **Verilog HDL**.
 
 The design acts as a bridge between an **AMBA APB interface** and an **SPI Master datapath**, allowing an APB master to configure the SPI controller, initiate serial transfers, transmit data through MOSI, and receive data through MISO.
 
-The RTL is designed using a **modular and synthesizable architecture** and has been verified through **module-level simulation, waveform analysis, RTL debugging, and synthesis using Synopsys Design Compiler**.
+The RTL follows a **modular and synthesizable architecture** and has been verified through **module-level simulation, waveform analysis, RTL debugging, and synthesis using Synopsys Design Compiler**.
 
 ---
 
@@ -21,8 +21,8 @@ The RTL is designed using a **modular and synthesizable architecture** and has b
 - Support configurable MSB-first / LSB-first operation
 - Implement SPI status and interrupt logic
 - Develop module-level Verilog testbenches
-- Verify APB and SPI timing through simulation waveforms
-- Synthesize RTL and analyze the generated gate-level netlist
+- Verify APB and SPI functionality through simulation
+- Perform RTL synthesis and analyze the generated netlist
 
 ---
 
@@ -46,7 +46,7 @@ The RTL is designed using a **modular and synthesizable architecture** and has b
                                 |
                                 v
                    +---------------------------+
-                   |        SPI CORE           |
+                   |        SPI CORE            |
                    |                           |
                    | +-----------------------+ |
                    | | Baud Rate Generator   | |
@@ -87,11 +87,11 @@ The RTL is partitioned into **bus interface, control, clock-generation, datapath
 
 ---
 
-# 🔌 APB Interface
+## 🔌 APB Interface
 
 The SPI Master is controlled through an **AMBA APB slave interface**.
 
-## APB Signals
+### APB Signals
 
 | Signal | Description |
 |---|---|
@@ -106,7 +106,7 @@ The SPI Master is controlled through an **AMBA APB slave interface**.
 | `PREADY` | APB transfer completion |
 | `PSLVERR` | APB error indication |
 
-## APB Transaction
+### APB Transaction
 
 ```text
              SETUP                 ACCESS
@@ -130,7 +130,7 @@ The APB interface performs:
 
 ---
 
-# 🗂️ Register Map
+## 🗂️ Register Map
 
 The SPI controller exposes configuration, status, and data registers through the APB interface.
 
@@ -144,7 +144,7 @@ The SPI controller exposes configuration, status, and data registers through the
 
 ---
 
-# 🎛️ SPI Control Configuration
+## 🎛️ SPI Control Configuration
 
 The primary control register provides configuration for the SPI operating mode.
 
@@ -170,7 +170,7 @@ Additional SPI control is provided through `SPI_CR_2`, including Mode Fault and 
 
 ---
 
-# ⏱️ Baud Rate Generation
+## ⏱️ Baud Rate Generation
 
 The `spi_baud_generator.v` module generates the SPI serial clock from the system clock.
 
@@ -199,15 +199,15 @@ The programmed values determine the clock division used to generate `SCLK`.
                           SCLK
 ```
 
-The generated `SCLK` is used by the SPI control and shifting logic to establish the serial transfer timing.
+The generated `SCLK` is used by the SPI control and shifting logic to establish serial transfer timing.
 
 ---
 
-# 🔄 SPI Serial Datapath
+## 🔄 SPI Serial Datapath
 
 The `spi_shifter.v` module implements the SPI transmit and receive datapath.
 
-## Transmit
+### Transmit
 
 ```text
 APB PWDATA
@@ -222,7 +222,7 @@ TX Shift Register
   MOSI
 ```
 
-## Receive
+### Receive
 
 ```text
   MISO
@@ -241,18 +241,18 @@ The shifter performs the required **parallel-to-serial and serial-to-parallel co
 
 ---
 
-# 🔢 Bit Ordering
+## 🔢 Bit Ordering
 
 The SPI Master supports configurable bit ordering.
 
-## MSB First
+### MSB First
 
 ```text
 Bit[7] → Bit[6] → Bit[5] → Bit[4]
        → Bit[3] → Bit[2] → Bit[1] → Bit[0]
 ```
 
-## LSB First
+### LSB First
 
 ```text
 Bit[0] → Bit[1] → Bit[2] → Bit[3]
@@ -263,7 +263,7 @@ The `LSBFE` control bit selects the required transfer direction.
 
 ---
 
-# 🎚️ SPI Clock Configuration
+## 🎚️ SPI Clock Configuration
 
 SPI timing is controlled using `CPOL` and `CPHA`.
 
@@ -274,14 +274,14 @@ SPI timing is controlled using `CPOL` and `CPHA`.
 | 2 | 1 | 0 |
 | 3 | 1 | 1 |
 
-## CPOL
+### CPOL
 
 ```text
 CPOL = 0 → SCLK idle LOW
 CPOL = 1 → SCLK idle HIGH
 ```
 
-## CPHA
+### CPHA
 
 `CPHA` determines the clock phase used for sampling and shifting serial data.
 
@@ -289,7 +289,7 @@ Together, `CPOL` and `CPHA` determine the SPI clock/data timing mode.
 
 ---
 
-# 🔴 Slave Select Control
+## 🔴 Slave Select Control
 
 The `spi_slave_select.v` module controls the SPI Slave Select (`SS`) signal.
 
@@ -324,7 +324,7 @@ Idle
 
 ---
 
-# 🚨 SPI Status Logic
+## 🚨 SPI Status Logic
 
 The SPI Status Register provides information about the current SPI operation.
 
@@ -338,7 +338,7 @@ The status signals can be accessed through APB register reads.
 
 ---
 
-# ⚠️ Mode Fault Detection
+## ⚠️ Mode Fault Detection
 
 The design includes **SPI Mode Fault detection** for Master-mode operation.
 
@@ -353,7 +353,7 @@ A detected Mode Fault condition updates the corresponding status indication.
 
 ---
 
-# 🔔 Interrupt Logic
+## 🔔 Interrupt Logic
 
 The SPI controller generates:
 
@@ -367,7 +367,7 @@ This provides a mechanism for the APB-connected processor to respond to SPI even
 
 ---
 
-# 🔁 Complete SPI Transfer
+## 🔁 Complete SPI Transfer
 
 The APB-controlled SPI transaction can be summarized as:
 
@@ -410,11 +410,11 @@ RX Data Available
 
 ---
 
-# 🧪 Verification
+## 🧪 Verification
 
 The design was verified using **Verilog-based module-level testbenches**.
 
-## Testbenches
+### Testbenches
 
 ```text
 tb/
@@ -425,7 +425,7 @@ tb/
 └── spi_apb_interface_tb.v
 ```
 
-## Verification Areas
+### Verification Areas
 
 - APB setup and access phases
 - APB read/write transactions
@@ -449,7 +449,7 @@ The MISO signal is driven in the testbench to model the response of an external 
 
 ---
 
-# 📊 Simulation Waveform
+## 📊 Simulation Waveform
 
 The functional simulation waveform demonstrates the interaction between the APB control interface and SPI serial interface.
 
@@ -469,11 +469,11 @@ The waveform is used to analyze:
 
 ---
 
-# 🏭 RTL Synthesis
+## 🏭 RTL Synthesis
 
 The RTL was synthesized using **Synopsys Design Compiler (DC)**.
 
-## Synthesis Flow
+### Synthesis Flow
 
 ```text
 Verilog RTL
@@ -501,17 +501,17 @@ The synthesis flow demonstrates the conversion of the RTL description into a **t
 
 ---
 
-# 📈 Synthesized Netlist
+## 📈 Synthesized Netlist
 
 The synthesized design was analyzed using **Synopsys Design Compiler**.
 
-## Netlist View 1
+### Netlist View 1
 
-![Synthesized Netlist 1](simulation/dc_netlist_1.png)
+![APB-SPI Master Netlist 1](simulation/apb_spi_master_netlist1.png)
 
-## Netlist View 2
+### Netlist View 2
 
-![Synthesized Netlist 2](simulation/dc_netlist_2.png)
+![APB-SPI Master Netlist 2](simulation/apb_spi_master_netlist2.png)
 
 The netlist views provide visibility into the synthesized:
 
@@ -526,7 +526,7 @@ The netlist views provide visibility into the synthesized:
 
 ---
 
-# 🛠️ Tools & Technologies
+## 🛠️ Tools & Technologies
 
 | Category | Technology |
 |---|---|
@@ -542,7 +542,7 @@ The netlist views provide visibility into the synthesized:
 
 ---
 
-# 📁 Repository Structure
+## 📁 Repository Structure
 
 ```text
 apb-spi-master/
@@ -563,15 +563,15 @@ apb-spi-master/
 │
 ├── simulation/
 │   ├── apb_spi_master_waveform.png
-│   ├── dc_netlist_1.png
-│   └── dc_netlist_2.png
+│   ├── apb_spi_master_netlist1.png
+│   └── apb_spi_master_netlist2.png
 │
 └── README.md
 ```
 
 ---
 
-# 🧠 Technical Skills Demonstrated
+## 🧠 Technical Skills Demonstrated
 
 - Verilog RTL Design
 - Synthesizable Digital Design
@@ -595,7 +595,7 @@ apb-spi-master/
 
 ---
 
-# 🏠 SoC Application
+## 🏠 SoC Application
 
 The APB-SPI Master can be integrated as an **APB peripheral within an SoC**.
 
@@ -608,7 +608,7 @@ The APB-SPI Master can be integrated as an **APB peripheral within an SoC**.
                            v
                     +-------------+
                     |  APB-SPI    |
-                    |  Controller  |
+                    |  Controller |
                     +------+------+
                            |
                   +--------+--------+
@@ -634,7 +634,7 @@ The controller can be used as an interface to SPI-compatible peripherals such as
 
 ---
 
-# 📚 Learning Outcomes
+## 📚 Learning Outcomes
 
 This project provided practical experience in:
 
@@ -649,13 +649,13 @@ This project provided practical experience in:
 
 ---
 
-# ✅ Project Status
+## ✅ Project Status
 
 **Completed**
 
 ---
 
-# 👨‍💻 Author
+## 👨‍💻 Author
 
 **Keerthan M**
 
